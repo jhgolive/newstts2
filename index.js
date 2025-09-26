@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(cors());
-app.use(express.static("public")); // 정적 파일 제공
+app.use(express.static(".")); // 정적 파일 제공
 
 let lastNews = "뉴스 로딩 중...";
 const parser = new xml2js.Parser({ explicitArray: false });
@@ -71,9 +71,9 @@ async function fetchAllNews() {
   }
 }
 
-// 초기 로드 + 50분마다 갱신
+// 초기 로드 + 30분마다 갱신
 fetchAllNews();
-setInterval(fetchAllNews, 3000000);
+setInterval(fetchAllNews, 1800000);
 
 // 뉴스 JSON
 app.get("/news", (req, res) => {
@@ -117,7 +117,7 @@ app.get("/news-tts", async (req, res) => {
 
 // 루트
 app.get("/", (req, res) => 
-  res.sendFile(path.join(process.cwd(), "public/index.html"))
+  res.sendFile(path.join(process.cwd(), "index.html"))
 );
 
 app.listen(PORT, () => 
