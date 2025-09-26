@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>뉴스음성</title>
+<title>뉴스 남자음성</title>
 <style>
   body {
     margin: 0;
@@ -52,8 +52,8 @@
 const newsEl = document.getElementById("news");
 const audioEl = document.getElementById("ttsAudio");
 
-const NEWS_API = "https://proxy2-production-b5a7.up.railway.app/news";
-const TTS_API = "https://proxy2-production-b5a7.up.railway.app/news-tts";
+const NEWS_API = "https://newstts2-production-b5a7.up.railway.app/news";
+const TTS_API = "https://newstts2-production-b5a7.up.railway.app/news-tts";
 
 // 뉴스 불러오기
 async function loadNews() {
@@ -92,8 +92,16 @@ async function startScrollAndTTS(text) {
     newsEl.offsetHeight; // 리플로우 강제
     newsEl.style.animation = `scroll ${duration}s linear 1`;
 
+    // Web Audio API로 볼륨 제어
+    const ctx = new AudioContext();
+    const source = ctx.createMediaElementSource(audioEl);
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = 0.5; // 원하는 볼륨 (0.0 ~ 1.0)
+    source.connect(gainNode).connect(ctx.destination);
+    
     // 3초 딜레이 후 TTS 재생
     setTimeout(() => {
+      ctx.resume(); // 일부 브라우저에서 필요
       audioEl.play().catch(err => console.warn(err));
     }, 3000);
   };
