@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>뉴스음성</title>
+<style>
+  body {
+    margin: 0;
+    background: transparent;
+    overflow: hidden;
+  }
+
+  #wrapper {
+    white-space: nowrap;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 40px;
+    z-index: 9999;
+  }
+
+  #news {
+    display: inline-block;
+    font-size: 28px;
+    color: white;
+    font-weight: bold;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black,
+                 -1px -1px black, -1px 1px black, 1px -1px black, 1px 1px black;
+    position: absolute;
+    top: 0;
+    white-space: nowrap;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  @keyframes scroll {
+    from { transform: translateX(100vw); }
+    to { transform: translateX(-100%); }
+  }
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <div id="news">뉴스 로딩 중...</div>
+</div>
+
+<audio id="ttsAudio" playsinline></audio>
+
+<script>
+const newsEl = document.getElementById("news");
+const audioEl = document.getElementById("ttsAudio");
+
+const NEWS_API = "https://proxy2-production-b5a7.up.railway.app/news";
+const TTS_API = "https://proxy2-production-b5a7.up.railway.app/news-tts";
+
+// 뉴스 불러오기
+async function loadNews() {
+  try {
+    const res = await fetch(NEWS_API);
+    const data = await res.json();
+    if (data.news) {
+      startScrollAndTTS(data.news);
+    }
+  } catch (err) {
+    console.error("뉴스 불러오기 실패", err);
+  }
+}
+
+// 스크롤 + TTS 동기화
+async function startScrollAndTTS(text) {
+  newsEl.textContent = text;
+
+  // TTS mp3 받아오기
+  const ttsRes = await fetch(TTS_API);
+  const ttsBlob = await ttsRes.blob();
+  audioEl.src = URL.createObjectURL(ttsBlob);
+  audioEl.pause();
+  audioEl.currentTime = 0;
+
+  // mp3 로딩 후 재생 준비
+  audioEl.onloadedmetadata = () => {
+    const duration = audioEl.duration;
+
+    // 스크롤 속도 계산
+    const wrapperWidth = newsEl.parentElement.offsetWidth;
+    const textWidth = newsEl.offsetWidth;
+    const distance = wrapperWidth + textWidth;
+    
+    newsEl.style.animation = "none"; // 기존 애니메이션 초기화
+    newsEl.offsetHeight; // 리플로우 강제
+    newsEl.style.animation = `scroll ${duration}s linear 1`;
+
+    // 3초 딜레이 후 TTS 재생
+    setTimeout(() => {
+      audioEl.play().catch(err => console.warn(err));
+    }, 3000);
+  };
+
+  // 스크롤 끝나면 다음 뉴스
+  newsEl.addEventListener("animationend", function handler() {
+    newsEl.removeEventListener("animationend", handler);
+    loadNews();
+  });
+}
+
+// 초기 실행
+loadNews();
+</script>
+</body>
+</html>
