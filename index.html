@@ -96,7 +96,7 @@ async function startScrollAndTTS(text) {
     const ctx = new AudioContext();
     const source = ctx.createMediaElementSource(audioEl);
     const gainNode = ctx.createGain();
-    gainNode.gain.value = 0.5; // 원하는 볼륨 (0.0 ~ 1.0)
+    gainNode.gain.value = 1.0; // 원하는 볼륨 (0.0 ~ 1.0)
     source.connect(gainNode).connect(ctx.destination);
     
     // 3초 딜레이 후 TTS 재생
