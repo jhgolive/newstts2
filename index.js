@@ -71,9 +71,9 @@ async function fetchAllNews() {
   }
 }
 
-// 초기 로드 + 30분마다 갱신
+// 초기 로드 + 60분마다 갱신
 fetchAllNews();
-setInterval(fetchAllNews, 1800000);
+setInterval(fetchAllNews, 3600000);
 
 // 뉴스 JSON
 app.get("/news", (req, res) => {
